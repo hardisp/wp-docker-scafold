@@ -1,8 +1,8 @@
 version: "3.6"
 services:
   wordpress:
-    image: wordpress:latest
-    container_name: wordpress
+    image: wordpress:latest # you can use specify version on this, E.g: wordpress:php8.2-apache
+    container_name: wordpress # You can change this name with your specify project name
     volumes:
       - ./app/wp-content:/var/www/html/wp-content
     environment:
@@ -19,6 +19,8 @@ services:
       - 8080:80
 
   db:
+    # MYSQL
+    ## image: mysql:8.0  # 👈 Switched to MySQL
     image: mariadb:latest
     container_name: db
     volumes:
