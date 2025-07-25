@@ -1,0 +1,23 @@
+wordpress/
+app/
+dummy.md
+dump.sql
+
+/* misc */
+*.log
+*.tmp
+*.bak
+*.swp
+*.DS_Store
+*.db
+*.sqlite
+*.sqlite3
+*.pid
+*.pid.lock
+
+/* environment */
+.env
+.env.local
+.env.development
+.env.test
+.env.production
