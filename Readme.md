@@ -8,7 +8,7 @@ I initiate this scaffold because when I dev a wordpress I don't want to install 
 cp .env.example .env
 ```
 
-Please edit that file as your want.
+Please edit that file as your configuration purpose.
 
 ## For Existing Project
 

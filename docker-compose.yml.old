@@ -1,0 +1,65 @@
+version: "3.6"
+services:
+  nginx:
+      image: nginx:alpine
+      ports:
+        - "8000:80"
+      volumes:
+        - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+        - ./app/wp-content:/var/www/html/wp-content
+      depends_on:
+        - wordpress
+      networks:
+        - wpnet
+  wordpress:
+    image: wordpress:${WORDPRESS_VERSION} # you can use specify version on this, E.g: wordpress:php8.2-apache 
+    volumes:
+      - ./app/wp-content:/var/www/html/wp-content
+    environment:
+      - WORDPRESS_DB_NAME=${APP_DB_NAME}
+      - WORDPRESS_TABLE_PREFIX=${APP_DB_TABLE_PREFIX}
+      - WORDPRESS_DB_HOST=${APP_DB_HOST}
+      - WORDPRESS_DB_USER=${APP_DB_USERNAME}
+      - WORDPRESS_DB_PASSWORD=${APP_DB_PASSWORD}
+      - WORDPRESS_CONFIG_EXTRA=define('WP_REDIS_HOST', 'redis'); define('WP_REDIS_PORT', 6379); define('WP_CACHE', true)
+    depends_on:
+      - db
+      - redis
+      - phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    networks:
+      - wpnet
+
+  db:
+    # MYSQL
+    image: mysql:${MYSQL_VERSION}
+    volumes:
+      - db_data:/var/lib/mysql
+      # This is optional!!!
+      - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      # # #
+    environment:
+      - MYSQL_ROOT_PASSWORD=${APP_DB_ROOT_PASSWORD}
+      - MYSQL_USER=${APP_DB_USERNAME}
+      - MYSQL_PASSWORD=${APP_DB_USERNAME}
+      - MYSQL_DATABASE=${APP_DB_NAME}
+    restart: always
+    ports:
+      - ${APP_DB_PORT}:3306
+
+  phpmyadmin:
+    depends_on:
+      - db
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - 8180:80
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${APP_DB_ROOT_PASSWORD}
+
+volumes:
+  db_data:
