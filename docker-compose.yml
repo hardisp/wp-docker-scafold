@@ -12,7 +12,8 @@ services:
       - wpnet
 
   wordpress:
-    image: wordpress:${WORDPRESS_VERSION}
+    build: .
+    # image: wordpress:${WORDPRESS_VERSION}
     environment:
       WORDPRESS_TABLE_PREFIX: ${WORDPRESS_DB_TABLE_PREFIX}
       WORDPRESS_DB_HOST: ${MYSQL_HOST}
@@ -34,16 +35,22 @@ services:
   db:
     image: mysql:${MYSQL_VERSION}
     environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
       MYSQL_USER: ${WORDPRESS_DB_USER}
       MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    command: --default-authentication-plugin=mysql_native_password
     volumes:
       - db_data:/var/lib/mysql
     ports:
       - ${MYSQL_EXPOSED_PORT}:3306  # <-- Exposes MySQL on your host
     networks:
       - wpnet
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:alpine
@@ -54,12 +61,12 @@ services:
     image: phpmyadmin/phpmyadmin
     restart: always
     ports:
-      - "8080:80"
+      - "8180:80"
     environment:
       PMA_HOST: db
       PMA_PORT: 3306
-      PMA_USER: ${WORDPRESS_DB_USER}
-      PMA_PASSWORD: ${WORDPRESS_DB_PASSWORD}
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
       - db
     networks:
